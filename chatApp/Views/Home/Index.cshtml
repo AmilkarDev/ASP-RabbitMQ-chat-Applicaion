@@ -1,0 +1,129 @@
+﻿@using System.Web.Optimization
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("#btnsend").click(function () {
+                send();
+            });
+            getmyfriends();
+            function getmyfriends()
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("friendlist")",
+                    contentType: "application/json; charset=utf-8",
+                    data: '{}',
+                    dataType: "json",
+                    success: function (r) {
+                        var ddlfrined = $("[id*=ddlfriend]");
+                        // ddlfrined.empty().append('<option selected="selected" value="0">select</option>');
+                        for (var i = 0; i <r.length; i++) {
+                            ddlfrined.append($("<option></option>").val(r[i].Value).html(r[i].Text));
+                        }
+                    },
+                    error: function (r) {
+                        alert("error");
+                    }
+                });
+            }
+            setInterval(function () {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    data: '{}',
+                    url: "@Url.Action("receive")",
+                    dataType: "json",
+                    success: function (response) {
+                        var data = $("#divmsg").html();
+                        $("#divmsg").html(data + "<br>Friend:" + response);
+
+                    },
+                    error: function (response) {
+
+                    }
+                });
+            }, 5000);
+            function send() {
+                var message = $("#txtmsg").val();
+                var friend = $("#ddlfriend").val();
+                var data = $("#divmsg").html();
+                $("#divmsg").html(data + "<br>Me:" + message);
+                $("#txtmsg").val("");
+                debugger;
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    data: '{"message":"' + message + '","friend":"'+friend+'"}',
+                    url: "@Url.Action("sendmsg")",
+                    dataType: "json",
+                    success: function (response) {
+                        var data = $("#divmsg").html();
+                        $("#divmsg").html(data + "<br>Me :" + message);
+                    },
+                    error: function (response) {
+
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <nav class="nav navbar-default">
+        <div class="navbar-brand">
+            <span style="float:right;">@Session["username"].ToString()</span>
+        </div>
+    </nav>
+    <br />
+    <div class="clearfix"></div>
+    @using (Html.BeginForm())
+    {
+        <div class="container">
+            <div class="row">
+
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <select id="ddlfriend" name="ddlfriend" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="txtmsg" id="txtmsg" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <input type="button" value="send" class="btn btn-success" name="btnsend" id="btnsend" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <div class="panel-title">
+                                Messages
+                            </div>
+                            <div class="panel-footer" style="min-height:400px;">
+                                <div id="divmsg">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div>
+    </div>
+</body>
+</html>  
